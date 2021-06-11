@@ -1,0 +1,19 @@
+{
+  "name": "amanita-dating-core",
+  "version": "1.0.0",
+  "description": "dating app core",
+  "main": "index.js",
+  "scripts": {
+    "test": "echo \"Error: no test specified\" && exit 1"
+  },
+  "repository": {
+    "type": "git",
+    "url": "git+https://github.com/vasreb/amanita-dating-core.git"
+  },
+  "author": "vasreborn@gmail.com",
+  "license": "ISC",
+  "bugs": {
+    "url": "https://github.com/vasreb/amanita-dating-core/issues"
+  },
+  "homepage": "https://github.com/vasreb/amanita-dating-core#readme"
+}

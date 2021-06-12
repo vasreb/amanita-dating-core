@@ -1,9 +1,9 @@
 import * as express from "express";
 import * as bodyParser from "body-parser";
 import { AddressInfo } from "net";
-/* import passport from "passport";
-import cors from 'cors'; */
+/* import cors from 'cors'; */
 import { connect } from "./db/db";
+import errorMiddleware from "./utils/errorMiddleware";
 
 import './utils/ConfigureMapper';
 
@@ -21,8 +21,6 @@ const server = app.listen(PORT, HOST, () => {
 });
 
 
-/* app.use(cors()); */
-
 app.use(
   bodyParser.json({
     limit: "50mb",
@@ -32,9 +30,8 @@ app.use(
   })
 );
 
-/* app.use(passport.initialize());
-app.use(passport.session()); */
-
 export { app };
 
 import "./controllers/main";
+
+app.use(errorMiddleware);

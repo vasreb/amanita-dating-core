@@ -1,11 +1,11 @@
-import Audio from "./Audio";
-import { AutoMap } from "@automapper/classes";
+import Audio from './Audio'
+import { AutoMap } from '@automapper/classes'
 
 export default class EditUserModel {
-  @AutoMap() id: number;
-  @AutoMap() description: string;
-  @AutoMap() name: string;
-  @AutoMap() photoUrl: string;
-  cityName: string;
-  audios: Audio[];
+  @AutoMap() id: number
+  @AutoMap() description: string
+  @AutoMap() name: string
+  @AutoMap() photoUrl: string
+  cityName: string
+  audios: Audio[]
 }

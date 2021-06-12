@@ -1,21 +1,21 @@
 export default class SuccessErrorDto<T = void> {
   constructor(d?: T) {
-    this.data = d;
+    this.data = d
   }
 
-  errorMessage: string;
-  data: T;
+  errorMessage: string
+  data: T
 
   get error() {
-    return !!this.errorMessage;
+    return !!this.errorMessage
   }
 
   get success() {
-    return !this.errorMessage;
+    return !this.errorMessage
   }
 
   set error(_) {
-    this.errorMessage = "Неопределенная ошибка";
+    this.errorMessage = 'Неопределенная ошибка'
   }
 
   toJSON() {

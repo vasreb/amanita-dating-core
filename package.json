@@ -4,7 +4,13 @@
   "description": "dating app core",
   "main": "index.js",
   "scripts": {
-    "test": "echo \"Error: no test specified\" && exit 1"
+    "start": "ts-node ./src/app.ts",
+    "dev": "nodemon",
+    "build": "tsc",
+    "migration:generate": "npm run typeorm -- migration:generate --config ormconfig.js --connection  --name ",
+    "migration:run": "npm run typeorm -- migration:run",
+    "migration:revert": "ts-node ./node_modules/typeorm/cli.js migration:revert",
+    "typeorm": "node --require ts-node/register ./node_modules/typeorm/cli.js"
   },
   "repository": {
     "type": "git",
@@ -15,5 +21,18 @@
   "bugs": {
     "url": "https://github.com/vasreb/amanita-dating-core/issues"
   },
-  "homepage": "https://github.com/vasreb/amanita-dating-core#readme"
+  "homepage": "https://github.com/vasreb/amanita-dating-core#readme",
+  "devDependencies": {
+    "nodemon": "^2.0.7",
+    "typeorm-cli": "^1.0.7",
+    "typescript": "^4.3.2"
+  },
+  "dependencies": {
+    "@types/express": "^4.17.12",
+    "express": "^4.17.1",
+    "mysql": "^2.18.1",
+    "reflect-metadata": "^0.1.13",
+    "ts-node": "^10.0.0",
+    "typeorm": "^0.2.34"
+  }
 }

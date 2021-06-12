@@ -1,0 +1,16 @@
+{
+  "type": "mysql",
+  "host": "localhost",
+  "port": 3306,
+  "username": "evo_user",
+  "password": "50139512fjfsoaFoasjfioSFksp5395352",
+  "database": "datingcoredb",
+  "entities": ["src/db/models/*.ts"],
+  "migrations": ["src/db/migrations/*.ts"],
+  "synchronize": true,
+  "logging": false,
+  "cli": {
+    "entitiesDir": "src/db/models",
+    "migrationsDir": "src/db/migrations"
+  }
+}

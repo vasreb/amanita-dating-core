@@ -1,8 +1,11 @@
-import Audio from './Audio';
+import Audio from "./Audio";
+import { AutoMap } from "@automapper/classes";
 
-export default interface UserModel {
-    id: number;
-    description: string;
-    name: string;
-    audios: Audio[];
+export default class EditUserModel {
+  @AutoMap() id: number;
+  @AutoMap() description: string;
+  @AutoMap() name: string;
+  @AutoMap() photoUrl: string;
+  cityName: string;
+  audios: Audio[];
 }

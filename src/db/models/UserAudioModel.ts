@@ -19,7 +19,7 @@ class UserAudio extends BaseEntity {
   @ManyToOne(type => UserModel, user => user.userAudios)
   user: UserModel;
   @ManyToOne(type => AudioModel, audio => audio.userAudios)
-  audio: UserModel;
+  audio: AudioModel;
 }
 
 export { UserAudio as UserAudioModel };

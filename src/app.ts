@@ -5,6 +5,8 @@ import { AddressInfo } from "net";
 import cors from 'cors'; */
 import { connect } from "./db/db";
 
+import './utils/ConfigureMapper';
+
 connect();
 
 const app = express();

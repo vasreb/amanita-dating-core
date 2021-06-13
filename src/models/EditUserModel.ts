@@ -6,6 +6,8 @@ export default class EditUserModel {
   @AutoMap() description: string;
   @AutoMap() name: string;
   @AutoMap() photoUrl: string;
+  gender: string;
+  age: number;
   cityName: string;
   audios: Audio[];
 }

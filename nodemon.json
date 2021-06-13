@@ -1,5 +1,5 @@
 {
-  "watch": ["./src/**/*", ".env"],
+  "watch": ["./src/**/*", ".env", "ormconfig.json"],
   "ext": "ts",
   "exec": "npm start"
 }

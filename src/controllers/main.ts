@@ -3,18 +3,30 @@ import userService from '../services/UserService';
 import EditUserModel from '../models/EditUserModel';
 import { withErrorHandling } from './../utils/errorMiddleware';
 
+
+app.get(
+  '/user/next',
+  withErrorHandling(async function (req, res) {
+    const userId = req?.query?.id;
+
+    if (typeof userId !== 'string') {
+      throw Error('err');
+    }
+
+    const result = await userService.getNextUser(parseInt(userId));
+
+    res.status(200).json(result);
+  })
+);
+
 app.get(
   '/user/:id',
   withErrorHandling(async function (req, res, next) {
-    try {
-      const userId = req.params.id as string;
+    const userId = req.params.id as string;
 
-      const result = await userService.getUser(parseInt(userId));
+    const result = await userService.getUser(parseInt(userId));
 
-      res.status(200).json(result);
-    } catch (error) {
-      next(error);
-    }
+    res.status(200).json(result);
   })
 );
 
@@ -48,20 +60,5 @@ app.patch(
     const result = await userService.patchUser(user);
 
     res.status(200).json(result);
-  })
-);
-
-app.get(
-  '/user/next',
-  withErrorHandling(async function (req, res) {
-    const userId = req?.query?.id;
-
-    if (typeof userId !== 'string') {
-      throw Error('err');
-    }
-
-    await userService.getNextUser(parseInt(userId));
-
-    res.sendStatus(200);
   })
 );

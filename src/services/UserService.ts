@@ -5,12 +5,14 @@ import audioService from './AudioService';
 import cityService from './CityService';
 import SuccessErrorDto from '../models/SuccessErrorDto';
 import UserIdResponse from '../models/UserIdResponse';
+import matchingService from './MatchingService';
 
 class UserService {
   private static readonly BadCityError = 'Город с таким названием не найден, попробуйте уточнить';
 
   private _audioService = audioService;
   private _cityService = cityService;
+  private _matchingService = matchingService;
 
   public async addUser(userModel: EditUserModel): Promise<SuccessErrorDto<UserIdResponse>> {
     const exist = await UserModel.findOne({ where: { id: userModel.id } });
@@ -20,6 +22,8 @@ class UserService {
     const user = new UserModel();
 
     user.description = userModel.description;
+    user.age = userModel.age;
+    user.gender = userModel.gender;
     user.name = userModel.name;
     user.photoUrl = userModel.photoUrl;
 
@@ -53,6 +57,8 @@ class UserService {
     user.description = userModel.description;
     user.name = userModel.name;
     user.photoUrl = userModel.photoUrl;
+    user.age = userModel.age;
+    user.gender = userModel.gender;
 
     await this.clearUserAudios(user.id);
     await user.save();
@@ -120,6 +126,8 @@ class UserService {
     userModel.id = exist.id;
     userModel.description = exist.description;
     userModel.name = exist.name;
+    userModel.age = exist.age;
+    userModel.gender = exist.gender;
     userModel.photoUrl = exist.photoUrl;
     userModel.audios = (await this.getUserAudios(userId)).map((a) => ({
       id: a.id,
@@ -135,12 +143,17 @@ class UserService {
     return response;
   }
 
-  public async getNextUser(currentUserId: number): Promise<void> {
+  public async getNextUser(currentUserId: number): Promise<SuccessErrorDto<EditUserModel>> {
     const currentUser = await UserModel.findOne({
       where: { id: currentUserId },
+      relations: ['city'],
     });
 
     if (!currentUser) throw new Error('guy not exist');
+
+    const matchingUser = await this._matchingService.findMatch(currentUser);
+
+    return this.getUser(matchingUser.id);
   }
 
   private async getUserAudios(userId: number) {

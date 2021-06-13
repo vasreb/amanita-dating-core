@@ -6,6 +6,8 @@ import cityService from './CityService';
 import SuccessErrorDto from '../models/SuccessErrorDto';
 import UserIdResponse from '../models/UserIdResponse';
 import matchingService from './MatchingService';
+import { UserOptionsModel } from '../db/models/UserOptionsModel';
+import userOptionsService from './UserOptionsService';
 
 class UserService {
   private static readonly BadCityError = 'Город с таким названием не найден, попробуйте уточнить';
@@ -13,6 +15,7 @@ class UserService {
   private _audioService = audioService;
   private _cityService = cityService;
   private _matchingService = matchingService;
+  private _userOptionsService = userOptionsService
 
   public async addUser(userModel: EditUserModel): Promise<SuccessErrorDto<UserIdResponse>> {
     const exist = await UserModel.findOne({ where: { id: userModel.id } });
@@ -29,14 +32,25 @@ class UserService {
 
     await user.save();
 
-    const userAudios = await this.addUserAudios(user, userModel);
+    let userAudios;
+
+    if (userModel?.audios?.length) {
+      userAudios = await this.addUserAudios(user, userModel);
+    }
 
     const response = new SuccessErrorDto<UserIdResponse>();
 
-    const cityName = await this.addUserCity(user, userModel.cityName);
+    let cityName;
+    if (userModel.cityName) {
+      cityName = await this.addUserCity(user, userModel.cityName);
+    }
 
-    if (!cityName) {
-      await UserAudioModel.remove(userAudios);
+    await this.createUserOptions(user);
+
+    if (userModel.cityName && !cityName) {
+      if (userAudios) {
+        await UserAudioModel.remove(userAudios);
+      }
       await UserModel.remove(user);
 
       response.errorMessage = UserService.BadCityError;
@@ -143,17 +157,12 @@ class UserService {
     return response;
   }
 
-  public async getNextUser(currentUserId: number): Promise<SuccessErrorDto<EditUserModel>> {
-    const currentUser = await UserModel.findOne({
-      where: { id: currentUserId },
-      relations: ['city'],
-    });
+  private async createUserOptions(user: UserModel) {
+    const options = await this._userOptionsService.createUserOptions(user);
 
-    if (!currentUser) throw new Error('guy not exist');
+    user.userOptionsId = options.id;
 
-    const matchingUser = await this._matchingService.findMatch(currentUser);
-
-    return this.getUser(matchingUser.id);
+    await user.save();
   }
 
   private async getUserAudios(userId: number) {

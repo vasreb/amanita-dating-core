@@ -23,6 +23,9 @@ class Match extends BaseEntity {
   @Column({ nullable: true })
   user2LikeDate: Date;
 
+  @Column({ nullable: true })
+  creationDate: Date;
+
   @ManyToOne((type) => UserModel, (user) => user.matches)
   user1: UserModel;
 

@@ -1,8 +1,9 @@
-import { BaseEntity, Entity, Column, PrimaryGeneratedColumn, OneToMany, ManyToOne } from 'typeorm';
+import { BaseEntity, Entity, Column, PrimaryGeneratedColumn, OneToMany, JoinColumn, ManyToOne, OneToOne } from 'typeorm';
 import { AutoMap } from '@automapper/classes';
 import { CityModel } from './CityModel';
 import { UserAudioModel } from './UserAudioModel';
 import { MatchModel } from './MatchModel';
+import { UserOptionsModel } from './UserOptionsModel';
 
 @Entity()
 class User extends BaseEntity {
@@ -37,11 +38,18 @@ class User extends BaseEntity {
   @Column({ nullable: true })
   cityId: number;
 
+  @Column({ nullable: true })
+  userOptionsId: number;
+
   @OneToMany((type) => UserAudioModel, (userAudio) => userAudio.user)
   userAudios: UserAudioModel[];
 
   @ManyToOne((type) => CityModel, (city) => city.users)
   city: CityModel;
+
+  @OneToOne(type => UserOptionsModel, userOpt => userOpt.user)
+  @JoinColumn()
+  userOptions: UserOptionsModel;
 
   @OneToMany((type) => MatchModel, (match) => [match.user1, match.user2])
   matches: MatchModel[];

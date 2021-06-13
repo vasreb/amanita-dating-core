@@ -43,30 +43,36 @@ class MatchingService {
   }
 
   public async likeMatch(userId: number, targetUserId: number) {
-    const [match] = await MatchModel.find({
+    const matches = await MatchModel.find({
       where: [
         { user1Id: userId, user2Id: targetUserId, user1LikeDate: null },
         { user2Id: userId, user1Id: targetUserId, user2LikeDate: null },
       ],
-      take: 1,
+      take: 10,
     });
 
+    if (matches.length > 1) {
+      console.error(matches);
+      throw new Error('несколкьо активных матчей с одним??');
+    }
+
+    const [match] = matches;
+
+    if (match.user1Id === userId && match.user1LikeDate === null) {
+      match.user1Like = true;
+      match.user1LikeDate = new Date();
+    }
+    if (match.user2Id === userId && match.user2LikeDate === null) {
+      match.user2Like = true;
+      match.user2LikeDate = new Date();
+    }
+
+    await match.save();
+    /* todo уведомлять лайкнутого */
   }
 
   /* создает пустое совпадение двух челов */
   private async createMatch(user1: UserModel, user2: UserModel) {
-    /* проверим если их матч уже есть и он активен 
-    TODO в запросе */
-    const matches = await this.getActiveMatches(user1.id);
-
-    if (
-      matches.find(
-        (m) => (m.user1Id === user1.id && m.user2Id === user2.id) || (m.user2Id === user1.id && m.user1Id === user2.id)
-      )
-    ) {
-      return null;
-    }
-
     const match = new MatchModel();
 
     match.user1Id = user1.id;

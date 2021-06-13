@@ -15,13 +15,10 @@ class MatchingService {
   }
 
   public async findMatch(currentUserId: number): Promise<SuccessErrorDto<EditUserModel>> {
-    console.log('biba2');
     const [currentUser] = await UserModel.find({
       where: { id: currentUserId },
       relations: ['city', 'userOptions'],
     });
-
-    console.log('biba');
 
     if (!currentUser) throw new Error('guy not exist');
 

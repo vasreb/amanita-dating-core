@@ -31,15 +31,30 @@ class MatchingService {
     return this._userService.getUser(guys[0].id);
   }
 
-  public async getActiveMatches(userId: number) {
+  public async getActiveMatches(userId: number): Promise<SuccessErrorDto<EditUserModel[]>> {
     const matches = await MatchModel.find({
       where: [
         { user1Id: userId, user1LikeDate: null },
         { user2Id: userId, user2LikeDate: null },
       ],
+      take: 10,
     });
 
-    return matches;
+    const response = new SuccessErrorDto(
+      await Promise.all(
+        matches.map(async (m) => {
+          const resp = await this._userService.getUser(m.user1Id === userId ? m.user2Id : m.user1Id);
+
+          if (resp.errorMessage) {
+            response.errorMessage = resp.errorMessage;
+          }
+
+          return resp.data;
+        })
+      )
+    );
+
+    return response;
   }
 
   public async likeMatch(userId: number, targetUserId: number) {

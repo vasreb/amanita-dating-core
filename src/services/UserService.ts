@@ -5,8 +5,6 @@ import audioService from './AudioService';
 import cityService from './CityService';
 import SuccessErrorDto from '../models/SuccessErrorDto';
 import UserIdResponse from '../models/UserIdResponse';
-import matchingService from './MatchingService';
-import { UserOptionsModel } from '../db/models/UserOptionsModel';
 import userOptionsService from './UserOptionsService';
 
 class UserService {
@@ -14,7 +12,6 @@ class UserService {
 
   private _audioService = audioService;
   private _cityService = cityService;
-  private _matchingService = matchingService;
   private _userOptionsService = userOptionsService
 
   public async addUser(userModel: EditUserModel): Promise<SuccessErrorDto<UserIdResponse>> {

@@ -1,0 +1,17 @@
+# copy this file to /lib/systemd/system/
+
+[Unit]
+Description=AMANITA DATING CORE
+
+[Service]
+ExecStart=/usr/local/bin/npm start
+ExecStop=/bin/kill -INT $MAINPID
+ExecReload=/bin/kill -TERM $MAINPID
+Restart=always
+User=root
+Group=nogroup
+Environment=NODE_ENV=production
+WorkingDirectory=/var/www/amanita-dating-core
+
+[Install]
+WantedBy=multi-user.target

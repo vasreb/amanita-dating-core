@@ -15,6 +15,7 @@ class AudioService {
     const addedAudios = notExistAudios.map(async (n) => {
       const audio = new AudioModel();
       audio.vkId = n.vkId;
+      audio.vkOwnerId = n.vkOwnerId;
       audio.groupName = n.groupName;
       audio.songName = n.songName;
 

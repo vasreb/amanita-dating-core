@@ -16,7 +16,7 @@ class User extends BaseEntity {
   name: string;
 
   @AutoMap()
-  @Column({ length: 1000, nullable: true })
+  @Column({ length: 1500, nullable: true })
   description: string;
 
   @Column({ type: 'tinyint', unsigned: true, nullable: true })

@@ -5,9 +5,9 @@ import { UserAudioModel } from './UserAudioModel';
 class Audio extends BaseEntity {
   @PrimaryGeneratedColumn() id: number;
 
-  @Column() vkId: number;
+  @Column({ type: 'bigint' }) vkId: number;
 
-  @Column() vkOwnerId: number;
+  @Column({ type: 'bigint' }) vkOwnerId: number;
 
   @Column() groupName: string;
 

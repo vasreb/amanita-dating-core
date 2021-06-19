@@ -26,6 +26,7 @@ class UserService {
     user.gender = userModel.gender;
     user.name = userModel.name;
     user.photoUrl = userModel.photoUrl;
+    user.disabled = userModel.disabled;
 
     await user.save();
 
@@ -70,6 +71,7 @@ class UserService {
     user.photoUrl = userModel.photoUrl;
     user.age = userModel.age;
     user.gender = userModel.gender;
+    user.disabled = userModel.disabled;
 
     await this.clearUserAudios(user.id);
     await user.save();
@@ -140,6 +142,7 @@ class UserService {
     userModel.age = exist.age;
     userModel.gender = exist.gender;
     userModel.photoUrl = exist.photoUrl;
+    userModel.disabled = exist.disabled;
     userModel.audios = (await this.getUserAudios(userId)).map((a) => ({
       id: a.id,
       vkId: a.vkId,

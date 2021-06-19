@@ -31,6 +31,9 @@ class User extends BaseEntity {
   @Column({ nullable: true })
   activity: number;
 
+  @Column({ nullable: true })
+  disabled: boolean;
+
   @AutoMap()
   @Column({ length: 1000, nullable: true })
   photoUrl: string;

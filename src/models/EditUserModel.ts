@@ -8,5 +8,6 @@ export default class EditUserModel {
   gender: string;
   age: number;
   cityName: string;
+  disabled: boolean;
   audios: Audio[];
 }

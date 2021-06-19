@@ -143,6 +143,7 @@ class UserService {
     userModel.audios = (await this.getUserAudios(userId)).map((a) => ({
       id: a.id,
       vkId: a.vkId,
+      vkOwnerId: a.vkOwnerId,
       songName: a.songName,
       groupName: a.groupName,
     }));

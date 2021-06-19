@@ -7,6 +7,8 @@ class Audio extends BaseEntity {
 
   @Column() vkId: number;
 
+  @Column() vkOwnerId: number;
+
   @Column() groupName: string;
 
   @Column() songName: string;

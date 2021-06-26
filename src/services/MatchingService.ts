@@ -1,13 +1,12 @@
 import { getManager } from 'typeorm';
 
 import { MatchModel } from '../db/models/MatchModel';
-import EditUserModel from '../models/EditUserModel';
 import SuccessErrorDto from '../models/SuccessErrorDto';
 import { UserModel } from '../db/models/UserModel';
 import getMatchingSortQuery from '../utils/matchingSortQuery';
 import userService from './UserService';
 import LikeResultModel from '../models/LikeResultModel';
-import MatchUserModel from 'models/MatchUserModel';
+import MatchUserModel from '../models/MatchUserModel';
 import notifyService from './NotifyService';
 
 class MatchingService {

@@ -27,7 +27,7 @@ class MatchingService {
 
     const guys = await this._dbManager.query(await getMatchingSortQuery(currentUser));
 
-    if (!guys[0]) return null;
+    if (!guys[0]) return new SuccessErrorDto<MatchUserModel>();
 
     const match = await this.createMatch(currentUser, guys[0] as UserModel);
 

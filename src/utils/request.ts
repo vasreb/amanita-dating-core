@@ -7,7 +7,7 @@ interface Options {
   cors?: boolean;
 }
 
-const request = async <T>(url: string, options: Options): Promise<T> => {
+const request = async <T>(url: string, options: Options = {}): Promise<T> => {
   const headers: { [key: string]: string } = {
     'Content-Type': 'application/json',
     Accept: 'application/json',

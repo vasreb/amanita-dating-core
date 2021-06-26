@@ -17,6 +17,25 @@ app.post(
   })
 );
 
+app.put(
+  '/matching',
+  withErrorHandling(async function (req, res) {
+    const data = req.body as { userId: number; targetId: number; };
+
+
+    if (typeof data.userId !== 'number') {
+      throw Error('err');
+    }
+    if (typeof data.targetId !== 'number') {
+      throw Error('err');
+    }
+
+    const result = await matchingService.likeMatch(data.userId, data.targetId);
+
+    res.status(200).json(result);
+  })
+);
+
 app.get(
   '/matching',
   withErrorHandling(async function (req, res) {

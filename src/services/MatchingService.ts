@@ -6,15 +6,19 @@ import SuccessErrorDto from '../models/SuccessErrorDto';
 import { UserModel } from '../db/models/UserModel';
 import getMatchingSortQuery from '../utils/matchingSortQuery';
 import userService from './UserService';
+import LikeResultModel from '../models/LikeResultModel';
+import MatchUserModel from 'models/MatchUserModel';
+import notifyService from './NotifyService';
 
 class MatchingService {
   private _userService = userService;
+  private _notifyService = notifyService;
 
   private get _dbManager() {
     return getManager();
   }
 
-  public async findMatch(currentUserId: number): Promise<SuccessErrorDto<EditUserModel>> {
+  public async findMatch(currentUserId: number): Promise<SuccessErrorDto<MatchUserModel>> {
     const [currentUser] = await UserModel.find({
       where: { id: currentUserId },
       relations: ['city', 'userOptions'],
@@ -26,12 +30,22 @@ class MatchingService {
 
     if (!guys[0]) return null;
 
-    await this.createMatch(currentUser, guys[0] as UserModel);
+    const match = await this.createMatch(currentUser, guys[0] as UserModel);
 
-    return this._userService.getUser(guys[0].id);
+    const matchUserModel = new MatchUserModel();
+    const response = new SuccessErrorDto<MatchUserModel>(matchUserModel);
+
+    matchUserModel.match = match;
+    const userResp = await this._userService.getUser(guys[0].id);
+    if (userResp.errorMessage) {
+      response.errorMessage = userResp.errorMessage;
+    }
+    matchUserModel.user = userResp.data;
+
+    return response;
   }
 
-  public async getActiveMatches(userId: number): Promise<SuccessErrorDto<EditUserModel[]>> {
+  public async getActiveMatches(userId: number): Promise<SuccessErrorDto<MatchUserModel[]>> {
     const matches = await MatchModel.find({
       where: [
         { user1Id: userId, user1LikeDate: null },
@@ -39,6 +53,9 @@ class MatchingService {
       ],
       take: 10,
     });
+
+    /* в начало засовываем те которые чел сам не лайкнул */
+    matches.sort((a, b) => (a.user1Id === userId && !a.user1Like ? -1 : 1));
 
     const response = new SuccessErrorDto(
       await Promise.all(
@@ -48,8 +65,12 @@ class MatchingService {
           if (resp.errorMessage) {
             response.errorMessage = resp.errorMessage;
           }
+          const matchUserModel = new MatchUserModel();
 
-          return resp.data;
+          matchUserModel.match = m;
+          matchUserModel.user = resp.data;
+
+          return matchUserModel;
         })
       )
     );
@@ -57,7 +78,7 @@ class MatchingService {
     return response;
   }
 
-  public async likeMatch(userId: number, targetUserId: number) {
+  public async likeMatch(userId: number, targetUserId: number): Promise<SuccessErrorDto<LikeResultModel>> {
     const matches = await MatchModel.find({
       where: [
         { user1Id: userId, user2Id: targetUserId, user1LikeDate: null },
@@ -83,7 +104,18 @@ class MatchingService {
     }
 
     await match.save();
-    /* todo уведомлять лайкнутого */
+
+    const result = new LikeResultModel();
+
+    result.mutually = Boolean(match.user1LikeDate && match.user1Like && match.user2LikeDate && match.user2Like);
+
+    if (result.mutually) {
+
+    } else {
+      this._notifyService.sendUserMsg(match.user1Id, `Вы кому-то понравились! Посмотрите анкету`);
+    }
+
+    return new SuccessErrorDto(result);
   }
 
   /* создает пустое совпадение двух челов */
@@ -95,6 +127,8 @@ class MatchingService {
     match.creationDate = new Date();
 
     await match.save();
+
+    return match;
   }
 }
 

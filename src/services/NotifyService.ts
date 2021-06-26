@@ -3,19 +3,23 @@ import request from '../utils/request';
 
 class NotifyService {
   public async sendUserMsg(userId: number, text: string) {
-    await request(`${VK_API}/sendUserMessage`, {
-      method: 'post',
-      data: {
-        userId,
-        text,
-      },
-    });
+    setTimeout(async () => {
+      request(`${VK_API}/sendUserMessage`, {
+        method: 'post',
+        data: {
+          userId,
+          text,
+        },
+      });
+    }, 5);
   }
 
   public async mutuallyMatchNotify(userId: number, user2Id: number) {
-    await request(`${VK_API}/mutuallyMatchNotify`, {
-      data: { userId, user2Id },
-    });
+    setTimeout(() => {
+      request(`${VK_API}/mutuallyMatchNotify`, {
+        data: { userId, user2Id },
+      });
+    }, 5);
   }
 }
 

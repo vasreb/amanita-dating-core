@@ -55,7 +55,7 @@ const getMatchingSortQuery = async (user: UserModel) => {
 
     # существующие матчи
 
-    Matches.count * ${coefs.MATCHES_COEF})
+    (Matches1.count + Matches2.count) * ${coefs.MATCHES_COEF})
     
     as resultCount
     
@@ -114,20 +114,26 @@ const getMatchingSortQuery = async (user: UserModel) => {
     # матчи
     LEFT JOIN
     (
-        SELECT ua1.user1Id, ua1.user2Id, COUNT(*) count
+        SELECT ua1.user2Id, COUNT(*) count
         FROM (SELECT id, user1Id, user2Id FROM \`match\`) ua1
         RIGHT JOIN
         (
-            SELECT id, user1Id, user2Id FROM \`match\` WHERE user1Id = ${user.id} OR user2Id = ${user.id}
+            SELECT id, user1Id, user2Id FROM \`match\` WHERE user1Id = ${user.id}
         ) ua2 ON ua1.id = ua2.id
-        GROUP BY case  when ua1.user1Id = ${user.id}
-                            then ua1.user2Id
-                            else ua1.user1Id
-                       end
-    ) Matches ON u.id = ( case Matches.user1Id
-    when ${user.id} then Matches.user2Id
-    else Matches.user1Id
-    end )
+        GROUP BY user2Id
+    ) Matches1 ON u.id = Matches1.user2Id
+
+    # матчи 2
+    LEFT JOIN
+    (
+        SELECT ua1.user1Id, COUNT(*) count
+        FROM (SELECT id, user1Id, user2Id FROM \`match\`) ua1
+        RIGHT JOIN
+        (
+            SELECT id, user1Id, user2Id FROM \`match\` WHERE user2Id = ${user.id}
+        ) ua2 ON ua1.id = ua2.id
+        GROUP BY user1Id
+    ) Matches2 ON u.id = Matches2.user1Id
     
     # расстояние
     JOIN city ON u.cityId = city.id

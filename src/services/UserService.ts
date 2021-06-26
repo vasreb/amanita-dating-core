@@ -26,7 +26,7 @@ class UserService {
     user.gender = userModel.gender;
     user.name = userModel.name;
     user.photoUrl = userModel.photoUrl;
-    user.disabled = userModel.disabled;
+    user.disabled = true;
 
     await user.save();
 

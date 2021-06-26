@@ -7,7 +7,7 @@ class NotifyService {
       request(`${VK_API}/sendUserMessage`, {
         method: 'post',
         data: {
-          userId,
+          id: userId,
           text,
         },
       });

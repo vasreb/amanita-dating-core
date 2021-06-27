@@ -62,7 +62,7 @@ const getMatchingSortQuery = async (user: UserModel) => {
     FROM user AS u 
     
     # совпадения аудио по vkId
-    RIGHT JOIN 
+    LEFT JOIN 
     (
         SELECT ua1.userId AS userId, COUNT(*) count
         FROM (SELECT userId, vkId FROM user_audio JOIN audio ON user_audio.audioId = audio.id) ua1
@@ -79,7 +79,7 @@ const getMatchingSortQuery = async (user: UserModel) => {
     ) vkIdMatches ON vkIdMatches.userId = u.id 
     
     # совпадения аудио по songName && groupName
-    RIGHT JOIN 
+    LEFT JOIN 
     (
         SELECT ua1.userId AS userId, COUNT(*) count
         FROM (SELECT userId, songName, groupName FROM user_audio JOIN audio ON user_audio.audioId = audio.id) ua1
@@ -96,7 +96,7 @@ const getMatchingSortQuery = async (user: UserModel) => {
     ) SNGNMatches ON SNGNMatches.userId = u.id 
     
     # совпадения аудио по groupName
-    RIGHT JOIN 
+    LEFT JOIN 
     (
         SELECT ua1.userId AS userId, COUNT(*) count
         FROM (SELECT userId, groupName FROM user_audio JOIN audio ON user_audio.audioId = audio.id) ua1

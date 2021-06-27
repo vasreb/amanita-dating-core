@@ -111,6 +111,7 @@ class MatchingService {
     if (result.mutually) {
       this._notifyService.mutuallyMatchNotify(match.user1Id, match.user2Id);
     } else {
+      console.log('targetUserId', targetUserId);
       this._notifyService.sendUserMsg(targetUserId, `Вы кому-то понравились! Посмотрите анкету`);
     }
 

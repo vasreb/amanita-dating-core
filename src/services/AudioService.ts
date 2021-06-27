@@ -8,6 +8,8 @@ class AudioService {
       where: [{ vkId: In(audios.map((a) => a.vkId)) }, { id: In(audios.map((a) => a.id)) }],
     });
 
+    console.dir(existAudios);
+
     const notExistAudios = audios.filter(
       (a) => !(existAudios.map((ad) => ad.vkId).includes(a.vkId) || existAudios.map((ad) => ad.id).includes(a.id))
     );

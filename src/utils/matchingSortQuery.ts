@@ -6,11 +6,11 @@ import configurationService from '../services/ConfigurationService';
 const getWhereGenderExpression = (options: UserOptionsModel) => {
   switch (options.searchGenderFilter) {
     case 'all':
-      return "WHERE uO.searchGenderFilter = 'all'";
+      return "WHERE uO.searchGenderFilter = 'all' AND ExcludeMatches.user2Id IS null";
     case 'male':
-      return "WHERE uO.searchGenderFilter = 'female'";
+      return "WHERE uO.searchGenderFilter = 'female' AND ExcludeMatches.user2Id IS null";
     case 'female':
-      return "WHERE uO.searchGenderFilter = 'male'";
+      return "WHERE uO.searchGenderFilter = 'male' AND ExcludeMatches.user2Id IS null";
   }
 
   throw new Error('have no gender filter!!!!');
@@ -154,9 +154,6 @@ const getMatchingSortQuery = async (user: UserModel) => {
     JOIN user_options uO ON u.userOptionsId = uO.id
 
     ${getWhereGenderExpression(user.userOptions)}
-
-    # исключим те матчи которые еще не получили ответа
-    WHERE ExcludeMatches.user2Id IS null
 
     ORDER BY resultCount DESC
 

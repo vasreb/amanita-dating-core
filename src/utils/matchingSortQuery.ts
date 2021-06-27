@@ -39,9 +39,9 @@ const getMatchingSortQuery = async (user: UserModel) => {
     GNMatches.count AS GroupAudioMatches,
     
     # совпадения по аудио 
-    (vkIdMatches.count * ${coefs.AUDIO_VKID_COEF} + 
-    SNGNMatches.count * ${coefs.AUDIO_GROUPSONG_COEF} + 
-    GNMatches.count * ${coefs.AUDIO_GROUP_COEF} + 
+    (ifnull(vkIdMatches.count, 0) * ${coefs.AUDIO_VKID_COEF} + 
+    ifnull(SNGNMatches.count, 0) * ${coefs.AUDIO_GROUPSONG_COEF} + 
+    ifnull(GNMatches.count, 0) * ${coefs.AUDIO_GROUP_COEF} + 
     
     # расстояние
     (1 / ((city.geoLat - ${user.city.geoLat})*(city.geoLat - ${user.city.geoLat}) + 
@@ -51,11 +51,11 @@ const getMatchingSortQuery = async (user: UserModel) => {
     ABS(1 / (cast(u.age as signed) - ${user.age} + 0.1)) * ${coefs.AGE_COEF} +
     
     # активность
-    u.activity * ${coefs.ACTIVITY_COEF} -
+    ifnull(u.activity, 0) * ${coefs.ACTIVITY_COEF} -
 
     # существующие матчи
 
-    (Matches1.count + Matches2.count) * ${coefs.MATCHES_COEF})
+    (ifnull(Matches1.count, 0) + ifnull(Matches2.count, 0)) * ${coefs.MATCHES_COEF})
     
     as resultCount
     

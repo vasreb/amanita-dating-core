@@ -25,11 +25,21 @@ class MatchingService {
 
     if (!currentUser) throw new Error('guy not exist');
 
-    const guys = await this._dbManager.query(await getMatchingSortQuery(currentUser));
+    const guys: UserModel[] = await this._dbManager.query(await getMatchingSortQuery(currentUser));
 
     if (!guys[0]) return new SuccessErrorDto<MatchUserModel>();
 
-    const match = await this.createMatch(currentUser, guys[0] as UserModel);
+    let match;
+
+    if (guys[0]) {
+      match = MatchModel.findOne({
+        where: { user1Id: currentUserId, user2Id: guys[0].id, user1LikeDate: null },
+      });
+    }
+
+    if (!match) {
+      match = await this.createMatch(currentUser, guys[0] as UserModel);
+    }
 
     const matchUserModel = new MatchUserModel();
     const response = new SuccessErrorDto<MatchUserModel>(matchUserModel);

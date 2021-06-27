@@ -143,7 +143,7 @@ const getMatchingSortQuery = async (user: UserModel) => {
       FROM (SELECT id, user1Id, user2Id FROM \`match\`) ua1
       RIGHT JOIN
       (
-          SELECT id, user1Id, user2Id FROM \`match\` WHERE user1Id = ${user.id} AND user1LikeDate is null
+          SELECT id, user1Id, user2Id FROM \`match\` WHERE user1Id = ${user.id} AND user2LikeDate is null
       ) ua2 ON ua1.id = ua2.id
       GROUP BY user2Id
     ) ExcludeMatches ON u.id = ExcludeMatches.user2Id

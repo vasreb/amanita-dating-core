@@ -107,17 +107,25 @@ class MatchingService {
 
     const [match] = matches;
 
+    if (!match) return new SuccessErrorDto(new LikeResultModel());
+
     if (match.user1Id === userId && match.user1LikeDate === null) {
       if (!dislike) {
         match.user1Like = true;
       }
       match.user1LikeDate = new Date();
+      if (dislike) {
+        match.user2LikeDate = new Date();
+      }
     }
     if (match.user2Id === userId && match.user2LikeDate === null) {
       if (!dislike) {
         match.user2Like = true;
       }
       match.user2LikeDate = new Date();
+      if (dislike) {
+        match.user1LikeDate = new Date();
+      }
     }
 
     await match.save();

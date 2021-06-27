@@ -87,7 +87,11 @@ class MatchingService {
     return response;
   }
 
-  public async likeMatch(userId: number, targetUserId: number, dislike: boolean): Promise<SuccessErrorDto<LikeResultModel>> {
+  public async likeMatch(
+    userId: number,
+    targetUserId: number,
+    dislike: boolean
+  ): Promise<SuccessErrorDto<LikeResultModel>> {
     const matches = await MatchModel.find({
       where: [
         { user1Id: userId, user2Id: targetUserId, user1LikeDate: null },
@@ -122,11 +126,13 @@ class MatchingService {
 
     result.mutually = Boolean(match.user1LikeDate && match.user1Like && match.user2LikeDate && match.user2Like);
 
-    if (result.mutually) {
-      this._notifyService.mutuallyMatchNotify(match.user1Id, match.user2Id);
-    } else {
-      console.log('targetUserId', targetUserId);
-      this._notifyService.sendUserMsg(targetUserId, `Вы кому-то понравились! Посмотрите анкету`);
+    if (!dislike) {
+      if (result.mutually) {
+        this._notifyService.mutuallyMatchNotify(match.user1Id, match.user2Id);
+      } else {
+        console.log('targetUserId', targetUserId);
+        this._notifyService.sendUserMsg(targetUserId, `Вы кому-то понравились! Посмотрите анкету`);
+      }
     }
 
     return new SuccessErrorDto(result);

@@ -135,12 +135,28 @@ const getMatchingSortQuery = async (user: UserModel) => {
         GROUP BY user1Id
     ) Matches2 ON u.id = Matches2.user1Id
     
+
+    # исключим те матчи которые еще не получили ответа
+    LEFT JOIN
+    (
+      SELECT ua1.user2Id
+      FROM (SELECT id, user1Id, user2Id FROM \`match\`) ua1
+      RIGHT JOIN
+      (
+          SELECT id, user1Id, user2Id FROM \`match\` WHERE user1Id = ${user.id} AND user1LikeDate is null
+      ) ua2 ON ua1.id = ua2.id
+      GROUP BY user2Id
+    ) ExcludeMatches ON u.id = ExcludeMatches.user2Id
+
     # расстояние
     JOIN city ON u.cityId = city.id
     # опции
     JOIN user_options uO ON u.userOptionsId = uO.id
 
     ${getWhereGenderExpression(user.userOptions)}
+
+    # исключим те матчи которые еще не получили ответа
+    WHERE ExcludeMatches.user2Id IS null
 
     ORDER BY resultCount DESC
 

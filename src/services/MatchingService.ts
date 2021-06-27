@@ -27,6 +27,8 @@ class MatchingService {
 
     const guys: UserModel[] = await this._dbManager.query(await getMatchingSortQuery(currentUser));
 
+    console.dir(guys);
+
     if (!guys[0]) return new SuccessErrorDto<MatchUserModel>();
 
     let match;

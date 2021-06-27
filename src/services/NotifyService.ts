@@ -17,6 +17,7 @@ class NotifyService {
   public async mutuallyMatchNotify(userId: number, user2Id: number) {
     setTimeout(() => {
       request(`${VK_API}/mutuallyMatchNotify`, {
+        method: 'post',
         data: { userId, user2Id },
       });
     }, 5);

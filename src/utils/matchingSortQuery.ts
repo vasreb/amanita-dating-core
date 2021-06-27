@@ -134,16 +134,21 @@ const getMatchingSortQuery = async (user: UserModel) => {
         ) ua2 ON ua1.id = ua2.id
         GROUP BY user1Id
     ) Matches2 ON u.id = Matches2.user1Id
-    
 
     # исключим те матчи которые еще не получили ответа
+    # или если с юзером уже был матч в этот день
     LEFT JOIN
     (
       SELECT ua1.user2Id
       FROM (SELECT id, user1Id, user2Id FROM \`match\`) ua1
       RIGHT JOIN
       (
-          SELECT id, user1Id, user2Id FROM \`match\` WHERE user1Id = ${user.id} AND user2LikeDate is null
+          SELECT id, user1Id, user2Id FROM \`match\` 
+            WHERE user1Id = ${user.id} 
+            AND user2LikeDate is null
+            OR DATE_SUB(CURDATE(), INTERVAL 1 DAY) < creationDate
+            OR DATE_SUB(CURDATE(), INTERVAL 1 DAY) < user1LikeDate
+            OR DATE_SUB(CURDATE(), INTERVAL 1 DAY) < user2LikeDate
       ) ua2 ON ua1.id = ua2.id
       GROUP BY user2Id
     ) ExcludeMatches ON u.id = ExcludeMatches.user2Id

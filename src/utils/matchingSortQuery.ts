@@ -6,11 +6,11 @@ import configurationService from '../services/ConfigurationService';
 const getWhereGenderExpression = (options: UserOptionsModel) => {
   switch (options.searchGenderFilter) {
     case 'all':
-      return "WHERE uO.searchGenderFilter = 'all' AND ExcludeMatches.user2Id IS null AND ExcludeMatches2.user2Id IS null AND ExcludeMatches3.user2Id IS null";
+      return "WHERE uO.searchGenderFilter = 'all' AND ExcludeMatches.user2Id IS null AND ExcludeMatches2.user2Id IS null AND ExcludeMatches3.user1Id IS null";
     case 'male':
-      return "WHERE uO.searchGenderFilter = 'female' AND ExcludeMatches.user2Id IS null AND ExcludeMatches2.user2Id IS null AND ExcludeMatches3.user2Id IS null";
+      return "WHERE uO.searchGenderFilter = 'female' AND ExcludeMatches.user2Id IS null AND ExcludeMatches2.user2Id IS null AND ExcludeMatches3.user1Id IS null";
     case 'female':
-      return "WHERE uO.searchGenderFilter = 'male' AND ExcludeMatches.user2Id IS null AND ExcludeMatches2.user2Id IS null AND ExcludeMatches3.user2Id IS null";
+      return "WHERE uO.searchGenderFilter = 'male' AND ExcludeMatches.user2Id IS null AND ExcludeMatches2.user2Id IS null AND ExcludeMatches3.user1Id IS null";
   }
 
   throw new Error('have no gender filter!!!!');

@@ -32,7 +32,7 @@ class MatchingService {
     let match;
 
     if (guys[0]) {
-      match = MatchModel.findOne({
+      match = await MatchModel.findOne({
         where: { user1Id: currentUserId, user2Id: guys[0].id, user1LikeDate: null },
       });
     }

@@ -30,7 +30,7 @@ app.put(
       throw Error('err');
     }
 
-    const result = await matchingService.likeMatch(data.userId, data.targetId, dislike);
+    const result = await matchingService.likeMatch(data.userId, data.targetId, data.dislike);
 
     res.status(200).json(result);
   })

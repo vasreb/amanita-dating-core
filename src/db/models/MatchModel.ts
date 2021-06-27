@@ -31,6 +31,20 @@ class Match extends BaseEntity {
 
   @ManyToOne((type) => UserModel, (user) => user.matches)
   user2: UserModel;
+
+  getLikeStateAndDate(id: number) {
+    let likeState;
+    let likeDate;
+    if (this.user1Id === id) {
+      likeState = this.user1Like;
+      likeDate = this.user1LikeDate;
+    } else {
+      likeState = this.user2Like;
+      likeDate = this.user2LikeDate;
+    }
+
+    return { likeState, likeDate };
+  }
 }
 
 export { Match as MatchModel };

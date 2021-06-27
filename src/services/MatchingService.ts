@@ -126,11 +126,15 @@ class MatchingService {
 
     result.mutually = Boolean(match.user1LikeDate && match.user1Like && match.user2LikeDate && match.user2Like);
 
+    const { likeDate } = match.getLikeStateAndDate(targetUserId);
+
     if (!dislike) {
       if (result.mutually) {
         this._notifyService.mutuallyMatchNotify(match.user1Id, match.user2Id);
       } else {
-        this._notifyService.sendUserMsg(targetUserId, `Вы кому-то понравились! Посмотрите анкету`);
+        if (!likeDate) {
+          this._notifyService.sendUserMsg(targetUserId, `Вы кому-то понравились! Посмотрите анкету`);
+        }
       }
     }
 

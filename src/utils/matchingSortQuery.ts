@@ -6,11 +6,11 @@ import configurationService from '../services/ConfigurationService';
 const getWhereGenderExpression = (options: UserOptionsModel) => {
   switch (options.searchGenderFilter) {
     case 'all':
-      return "WHERE uO.searchGenderFilter = 'all' AND ExcludeMatches.user2Id IS null";
+      return "WHERE uO.searchGenderFilter = 'all' AND ExcludeMatches.user2Id IS null AND ExcludeMatches2.user2Id IS null AND ExcludeMatches3.user2Id IS null";
     case 'male':
-      return "WHERE uO.searchGenderFilter = 'female' AND ExcludeMatches.user2Id IS null";
+      return "WHERE uO.searchGenderFilter = 'female' AND ExcludeMatches.user2Id IS null AND ExcludeMatches2.user2Id IS null AND ExcludeMatches3.user2Id IS null";
     case 'female':
-      return "WHERE uO.searchGenderFilter = 'male' AND ExcludeMatches.user2Id IS null";
+      return "WHERE uO.searchGenderFilter = 'male' AND ExcludeMatches.user2Id IS null AND ExcludeMatches2.user2Id IS null AND ExcludeMatches3.user2Id IS null";
   }
 
   throw new Error('have no gender filter!!!!');
@@ -135,8 +135,8 @@ const getMatchingSortQuery = async (user: UserModel) => {
         GROUP BY user1Id
     ) Matches2 ON u.id = Matches2.user1Id
 
+  
     # исключим те матчи которые еще не получили ответа
-    # или если с юзером уже был матч в этот день
     LEFT JOIN
     (
       SELECT ua1.user2Id
@@ -144,21 +144,51 @@ const getMatchingSortQuery = async (user: UserModel) => {
       RIGHT JOIN
       (
           SELECT id, user1Id, user2Id FROM \`match\` 
-            WHERE user1Id = ${user.id} 
-            AND user2LikeDate is null
-            OR DATE_SUB(CURDATE(), INTERVAL 1 DAY) < creationDate
-            OR DATE_SUB(CURDATE(), INTERVAL 1 DAY) < user1LikeDate
-            OR DATE_SUB(CURDATE(), INTERVAL 1 DAY) < user2LikeDate
+        WHERE user1Id = ${user.id} 
+        AND user1LikeDate is NULL
       ) ua2 ON ua1.id = ua2.id
       GROUP BY user2Id
     ) ExcludeMatches ON u.id = ExcludeMatches.user2Id
+
+    # исключим те матчи которые недавно от u1
+    LEFT JOIN
+    (
+      SELECT ua1.user2Id
+      FROM (SELECT id, user1Id, user2Id FROM \`match\`) ua1
+      RIGHT JOIN
+      (
+          SELECT id, user1Id, user2Id FROM \`match\` 
+        WHERE user1Id = ${user.id} AND
+        (DATE_SUB(CURDATE(), INTERVAL 1 DAY) < creationDate
+          OR DATE_SUB(CURDATE(), INTERVAL 1 DAY) < user1LikeDate
+          OR DATE_SUB(CURDATE(), INTERVAL 1 DAY) < user2LikeDate)
+      ) ua2 ON ua1.id = ua2.id
+      GROUP BY user2Id
+    ) ExcludeMatches2 ON u.id = ExcludeMatches2.user2Id
+          
+
+    # исключим те матчи которые недавно от u2
+    LEFT JOIN
+    (
+      SELECT ua1.user1Id
+      FROM (SELECT id, user1Id, user2Id FROM \`match\`) ua1
+      RIGHT JOIN
+      (
+          SELECT id, user1Id, user2Id FROM \`match\` 
+        WHERE user2Id = ${user.id} AND
+        (DATE_SUB(CURDATE(), INTERVAL 1 DAY) < creationDate
+          OR DATE_SUB(CURDATE(), INTERVAL 1 DAY) < user1LikeDate
+          OR DATE_SUB(CURDATE(), INTERVAL 1 DAY) < user2LikeDate)
+      ) ua2 ON ua1.id = ua2.id
+      GROUP BY user1Id
+    ) ExcludeMatches3 ON u.id = ExcludeMatches3.user1Id
 
     # расстояние
     JOIN city ON u.cityId = city.id
     # опции
     JOIN user_options uO ON u.userOptionsId = uO.id
 
-    ${getWhereGenderExpression(user.userOptions)}
+    ${getWhereGenderExpression(user.userOptions)} AND u.id <> ${user.id}
 
     ORDER BY resultCount DESC
 

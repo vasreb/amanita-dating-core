@@ -87,7 +87,7 @@ class MatchingService {
     return response;
   }
 
-  public async likeMatch(userId: number, targetUserId: number): Promise<SuccessErrorDto<LikeResultModel>> {
+  public async likeMatch(userId: number, targetUserId: number, dislike: boolean): Promise<SuccessErrorDto<LikeResultModel>> {
     const matches = await MatchModel.find({
       where: [
         { user1Id: userId, user2Id: targetUserId, user1LikeDate: null },
@@ -104,11 +104,15 @@ class MatchingService {
     const [match] = matches;
 
     if (match.user1Id === userId && match.user1LikeDate === null) {
-      match.user1Like = true;
+      if (!dislike) {
+        match.user1Like = true;
+      }
       match.user1LikeDate = new Date();
     }
     if (match.user2Id === userId && match.user2LikeDate === null) {
-      match.user2Like = true;
+      if (!dislike) {
+        match.user2Like = true;
+      }
       match.user2LikeDate = new Date();
     }
 

@@ -1,3 +1,4 @@
+/* DEPRECATED */
 import { UserModel } from 'db/models/UserModel';
 import { UserOptionsModel } from '../db/models/UserOptionsModel';
 import configurationService from '../services/ConfigurationService';

@@ -30,6 +30,7 @@ const getMatchingSortQuery = async (user: UserModel) => {
 
   await configurationService.loadNumberOptions(coefs);
 
+
   return `SELECT u.*, 
 
     city.geoLat,
@@ -64,61 +65,57 @@ const getMatchingSortQuery = async (user: UserModel) => {
     # совпадения аудио по vkId
     LEFT JOIN 
     (
-        SELECT ua1.userId AS userId, COUNT(*) count
-        FROM (SELECT userId, vkId FROM user_audio JOIN audio ON user_audio.audioId = audio.id) ua1
-        RIGHT JOIN
-        (
-            # получаем список тех юзер-аудио которые соответствуют по иду аудио нашего искомого юзера
-            SELECT vkId, userId  AS user2Id FROM user_audio JOIN audio ON user_audio.audioId = audio.id WHERE userId = ${
-              user.id
-            }
-        ) ua2 ON ua1.vkId = ua2.vkId
-        WHERE userId <> ${user.id}
-        GROUP BY ua1.userId
-    
+      SELECT ua2.userId AS userId, COUNT(*) count
+      FROM ( 
+      # получаем список тех юзер-аудио которые соответствуют по иду аудио нашего искомого юзера
+      SELECT vkId, userId  AS user2Id FROM user_audio JOIN audio ON user_audio.audioId = audio.id WHERE userId = ${user.id}) ua1
+      LEFT JOIN
+      (
+        SELECT userId, vkId FROM user_audio JOIN audio ON user_audio.audioId = audio.id
+      ) ua2 ON ua1.vkId = ua2.vkId
+      WHERE userId <> ${user.id}
+      GROUP BY ua2.userId
     ) vkIdMatches ON vkIdMatches.userId = u.id 
     
     # совпадения аудио по songName && groupName
     LEFT JOIN 
     (
-        SELECT ua1.userId AS userId, COUNT(*) count
-        FROM (SELECT userId, songName, groupName FROM user_audio JOIN audio ON user_audio.audioId = audio.id) ua1
-        RIGHT JOIN
-        (
-            # получаем список тех юзер-аудио которые соответствуют по иду аудио нашего искомого юзера
-            SELECT groupName, songName, userId  AS user2Id FROM user_audio JOIN audio ON user_audio.audioId = audio.id WHERE userId = ${
-              user.id
-            }
-        ) ua2 ON ua1.songName = ua2.songName AND ua1.groupName = ua2.groupName
-        WHERE userId <> ${user.id}
-        GROUP BY ua1.userId
-    
+      SELECT ua2.userId AS userId, COUNT(*) count
+      FROM (
+      # получаем список тех юзер-аудио которые соответствуют по иду аудио нашего искомого юзера
+      SELECT groupName, songName, userId  AS user2Id FROM user_audio JOIN audio ON user_audio.audioId = audio.id WHERE userId = ${user.id}) ua1
+      LEFT JOIN
+      (
+          SELECT userId, songName, groupName FROM user_audio JOIN audio ON user_audio.audioId = audio.id
+      ) ua2 ON ua1.songName = ua2.songName AND ua1.groupName = ua2.groupName
+      WHERE userId <> ${user.id}
+      GROUP BY ua2.userId
     ) SNGNMatches ON SNGNMatches.userId = u.id 
     
     # совпадения аудио по groupName
     LEFT JOIN 
     (
-        SELECT ua1.userId AS userId, COUNT(*) count
-        FROM (SELECT userId, groupName FROM user_audio JOIN audio ON user_audio.audioId = audio.id) ua1
-        RIGHT JOIN
+        SELECT ua2.userId AS userId, COUNT(*) count
+        FROM (
+		  # получаем список тех юзер-аудио которые соответствуют по иду аудио нашего искомого юзера
+        SELECT groupName, userId  AS user2Id FROM user_audio JOIN audio ON user_audio.audioId = audio.id WHERE userId = ${user.id}
+		  ) ua1
+        LEFT JOIN
         (
-            # получаем список тех юзер-аудио которые соответствуют по иду аудио нашего искомого юзера
-            SELECT groupName, userId  AS user2Id FROM user_audio JOIN audio ON user_audio.audioId = audio.id WHERE userId = ${
-              user.id
-            }
+            SELECT userId, groupName FROM user_audio JOIN audio ON user_audio.audioId = audio.id
         ) ua2 ON ua1.groupName = ua2.groupName
         WHERE userId <> ${user.id}
-        GROUP BY ua1.userId
+        GROUP BY ua2.userId
     ) GNMatches ON GNMatches.userId = u.id 
 
     # матчи
     LEFT JOIN
     (
-        SELECT ua1.user2Id, COUNT(*) count
-        FROM (SELECT id, user1Id, user2Id FROM \`match\`) ua1
-        RIGHT JOIN
+        SELECT ua2.user2Id, COUNT(*) count
+        FROM (SELECT id, user1Id, user2Id FROM \`match\` WHERE user1Id = ${user.id}) ua1
+        LEFT JOIN
         (
-            SELECT id, user1Id, user2Id FROM \`match\` WHERE user1Id = ${user.id}
+          SELECT id, user1Id, user2Id FROM \`match\`
         ) ua2 ON ua1.id = ua2.id
         GROUP BY user2Id
     ) Matches1 ON u.id = Matches1.user2Id
@@ -126,11 +123,11 @@ const getMatchingSortQuery = async (user: UserModel) => {
     # матчи 2
     LEFT JOIN
     (
-        SELECT ua1.user1Id, COUNT(*) count
-        FROM (SELECT id, user1Id, user2Id FROM \`match\`) ua1
-        RIGHT JOIN
+        SELECT ua2.user1Id, COUNT(*) count
+        FROM (SELECT id, user1Id, user2Id FROM \`match\` WHERE user2Id = ${user.id}) ua1
+        LEFT JOIN
         (
-            SELECT id, user1Id, user2Id FROM \`match\` WHERE user2Id = ${user.id}
+            SELECT id, user1Id, user2Id FROM \`match\`
         ) ua2 ON ua1.id = ua2.id
         GROUP BY user1Id
     ) Matches2 ON u.id = Matches2.user1Id
@@ -139,13 +136,15 @@ const getMatchingSortQuery = async (user: UserModel) => {
     # исключим те матчи которые еще не получили ответа
     LEFT JOIN
     (
-      SELECT ua1.user2Id
-      FROM (SELECT id, user1Id, user2Id FROM \`match\`) ua1
-      RIGHT JOIN
-      (
-          SELECT id, user1Id, user2Id FROM \`match\` 
+      SELECT ua2.user2Id
+      FROM (
+        SELECT id, user1Id, user2Id FROM \`match\` 
         WHERE user1Id = ${user.id} 
         AND user1LikeDate is NULL
+      ) ua1
+      LEFT JOIN
+      (
+        SELECT id, user1Id, user2Id FROM \`match\`
       ) ua2 ON ua1.id = ua2.id
       GROUP BY user2Id
     ) ExcludeMatches ON u.id = ExcludeMatches.user2Id
@@ -153,15 +152,17 @@ const getMatchingSortQuery = async (user: UserModel) => {
     # исключим те матчи которые недавно от u1
     LEFT JOIN
     (
-      SELECT ua1.user2Id
-      FROM (SELECT id, user1Id, user2Id FROM \`match\`) ua1
-      RIGHT JOIN
-      (
-          SELECT id, user1Id, user2Id FROM \`match\` 
+      SELECT ua2.user2Id
+      FROM (
+        SELECT id, user1Id, user2Id FROM \`match\` 
         WHERE user1Id = ${user.id} AND
         (DATE_SUB(CURDATE(), INTERVAL 1 DAY) < creationDate
           OR DATE_SUB(CURDATE(), INTERVAL 1 DAY) < user1LikeDate
           OR DATE_SUB(CURDATE(), INTERVAL 1 DAY) < user2LikeDate)
+        ) ua1
+      LEFT JOIN
+      (
+        SELECT id, user1Id, user2Id FROM \`match\`
       ) ua2 ON ua1.id = ua2.id
       GROUP BY user2Id
     ) ExcludeMatches2 ON u.id = ExcludeMatches2.user2Id
@@ -170,15 +171,15 @@ const getMatchingSortQuery = async (user: UserModel) => {
     # исключим те матчи которые недавно от u2
     LEFT JOIN
     (
-      SELECT ua1.user1Id
-      FROM (SELECT id, user1Id, user2Id FROM \`match\`) ua1
-      RIGHT JOIN
+      SELECT ua2.user1Id
+      FROM (SELECT id, user1Id, user2Id FROM \`match\` 
+      WHERE user2Id = ${user.id} AND
+      (DATE_SUB(CURDATE(), INTERVAL 1 DAY) < creationDate
+        OR DATE_SUB(CURDATE(), INTERVAL 1 DAY) < user1LikeDate
+        OR DATE_SUB(CURDATE(), INTERVAL 1 DAY) < user2LikeDate)) ua1
+      LEFT JOIN
       (
-          SELECT id, user1Id, user2Id FROM \`match\` 
-        WHERE user2Id = ${user.id} AND
-        (DATE_SUB(CURDATE(), INTERVAL 1 DAY) < creationDate
-          OR DATE_SUB(CURDATE(), INTERVAL 1 DAY) < user1LikeDate
-          OR DATE_SUB(CURDATE(), INTERVAL 1 DAY) < user2LikeDate)
+        SELECT id, user1Id, user2Id FROM \`match\`
       ) ua2 ON ua1.id = ua2.id
       GROUP BY user1Id
     ) ExcludeMatches3 ON u.id = ExcludeMatches3.user1Id

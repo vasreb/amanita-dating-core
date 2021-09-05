@@ -43,12 +43,14 @@ class MatchingQueryService {
       ])
       .from('user', 'u');
 
-    query = this.chainAudioJoins(query, user);
+    query = this.chainMatchesJoins(query, user);
     query = this.chainGenderFilter(query, user);
     query = this.chainExcludeMatchesFilter(query, user);
     query = this.chainSort(query, user);
 
     const str = query.getSql();
+    
+    console.log(str);
 
     return str;
   }
@@ -304,56 +306,56 @@ class MatchingQueryService {
     switch (true) {
       case user.gender === 'male' && user.userOptions.searchGenderFilter === 'all':
         query = query.andWhere(`
-            uO.searchGenderFilter = 'male' AND u.gender = "male"
+            (uO.searchGenderFilter = 'male' AND u.gender = "male"
             OR
             uO.searchGenderFilter = 'all' AND u.gender = "male"
             OR
             uO.searchGenderFilter = 'all' AND u.gender = "female"
             OR
-            uO.searchGenderFilter = 'male' AND u.gender = "female"
+            uO.searchGenderFilter = 'male' AND u.gender = "female")
           `);
         break;
       case user.gender === 'female' && user.userOptions.searchGenderFilter === 'all':
         query = query.andWhere(`
-            uO.searchGenderFilter = 'male' AND u.gender = "female"
+           (uO.searchGenderFilter = 'male' AND u.gender = "female"
             OR
             uO.searchGenderFilter = 'female' AND u.gender = "female"
             OR
             uO.searchGenderFilter = 'all' AND u.gender = "male"
             OR
-            uO.searchGenderFilter = 'all' AND u.gender = "female"
+            uO.searchGenderFilter = 'all' AND u.gender = "female")
           `);
         break;
       case user.gender === 'male' && user.userOptions.searchGenderFilter === 'male':
         query = query.andWhere(`
-            uO.searchGenderFilter = 'male' AND u.gender = "female"
+            (uO.searchGenderFilter = 'male' AND u.gender = "female"
             OR
             uO.searchGenderFilter = 'female' AND u.gender = "female"
             OR
             uO.searchGenderFilter = 'all' AND u.gender = "male"
             OR
-            uO.searchGenderFilter = 'all' AND u.gender = "female"
+            uO.searchGenderFilter = 'all' AND u.gender = "female")
           `);
         break;
       case user.gender === 'female' && user.userOptions.searchGenderFilter === 'male':
         query = query.andWhere(`
-            uO.searchGenderFilter = 'male' AND u.gender = "female"
+            (uO.searchGenderFilter = 'male' AND u.gender = "female"
             OR
-            uO.searchGenderFilter = 'all' AND u.gender = "male"
+            uO.searchGenderFilter = 'all' AND u.gender = "male")
           `);
         break;
       case user.gender === 'female' && user.userOptions.searchGenderFilter === 'female':
         query = query.andWhere(`
-            uO.searchGenderFilter = 'female' AND u.gender = "female"
+            (uO.searchGenderFilter = 'female' AND u.gender = "female"
             OR
-            uO.searchGenderFilter = 'all' AND u.gender = "female"
+            uO.searchGenderFilter = 'all' AND u.gender = "female")
         `);
         break;
       case user.gender === 'male' && user.userOptions.searchGenderFilter === 'female':
         query = query.andWhere(`
-            uO.searchGenderFilter = 'male' AND u.gender = "female"
+            (uO.searchGenderFilter = 'male' AND u.gender = "female"
             OR
-            uO.searchGenderFilter = 'all' AND u.gender = "female"
+            uO.searchGenderFilter = 'all' AND u.gender = "female")
            `);
         break;
     }

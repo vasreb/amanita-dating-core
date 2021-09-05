@@ -1,4 +1,13 @@
-import { BaseEntity, Entity, Column, PrimaryGeneratedColumn, OneToMany, JoinColumn, ManyToOne, OneToOne } from 'typeorm';
+import {
+  BaseEntity,
+  Entity,
+  Column,
+  PrimaryGeneratedColumn,
+  OneToMany,
+  JoinColumn,
+  ManyToOne,
+  OneToOne,
+} from 'typeorm';
 import { AutoMap } from '@automapper/classes';
 import { CityModel } from './CityModel';
 import { UserAudioModel } from './UserAudioModel';
@@ -50,7 +59,7 @@ class User extends BaseEntity {
   @ManyToOne((type) => CityModel, (city) => city.users)
   city: CityModel;
 
-  @OneToOne(type => UserOptionsModel, userOpt => userOpt.user)
+  @OneToOne((type) => UserOptionsModel, (userOpt) => userOpt.user)
   @JoinColumn()
   userOptions: UserOptionsModel;
 
@@ -59,4 +68,3 @@ class User extends BaseEntity {
 }
 
 export { User as UserModel };
-/*  */

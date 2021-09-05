@@ -10,8 +10,32 @@ type OptionName =
   | 'ACTIVITY_COEF'
   | 'MATCHES_COEF';
 
+const coefs = {
+  DISTANCE_COEF: null,
+  AUDIO_VKID_COEF: null,
+  AUDIO_GROUPSONG_COEF: null,
+  AUDIO_GROUP_COEF: null,
+  AGE_COEF: null,
+  ACTIVITY_COEF: null,
+  MATCHES_COEF: null,
+};
+
 class ConfigurationService {
-  public async loadNumberOptions(object: Object) {
+  private coefs = coefs;
+
+  constructor() {
+    /* seeding */
+    Object.values(this.coefs).forEach(async (key) => {
+      const option = await SystemOptionModel.findOne({ where: { name: key } });
+      if (!option.value && !option.numValue) {
+        option.value = '1';
+        option.numValue = 1;
+        option.save();
+      }
+    });
+  }
+
+  public async loadNumberOptions(object: Partial<typeof coefs> = this.coefs) {
     const res = await SystemOptionModel.find({ where: { name: In(Object.keys(object)) } });
 
     for (let key in object) {

@@ -18,17 +18,7 @@ class MatchingService {
   }
 
   public async getMatchingQuery(user: UserModel) {
-    const coefs = {
-      DISTANCE_COEF: null,
-      AUDIO_VKID_COEF: null,
-      AUDIO_GROUPSONG_COEF: null,
-      AUDIO_GROUP_COEF: null,
-      AGE_COEF: null,
-      ACTIVITY_COEF: null,
-      MATCHES_COEF: null,
-    };
-
-    await configurationService.loadNumberOptions(coefs);
+    const coefs = await configurationService.loadNumberOptions();
 
     let query = this._dbManager
       .createQueryBuilder()
@@ -66,53 +56,53 @@ class MatchingService {
       ])
       .from('user', 'u')
       /* совпадения аудио по vkId */
-      .leftJoinAndSelect(
+      .leftJoin(
         (qb) =>
           qb
-            .select('ua2.userId AS userId, COUNT(*) count')
+            .select(['ua2.userId AS userId', 'COUNT(*) count'])
             .from(
               (qb) =>
                 qb
                   .select(['vkId', 'userId AS user2Id'])
                   .from('user_audio', 'user_audio')
-                  .leftJoinAndSelect('audio', 'audio', 'user_audio.audioId = audio.id')
-                  .where(`userId = ${user.id}`),
+                  .leftJoin('audio', 'audio', 'user_audio.audioId = audio.id')
+                  .where(`user_audio.userId = ${user.id}`),
               'ua1'
             )
-            .leftJoinAndSelect(
+            .leftJoin(
               (qb) =>
                 qb
-                  .select(['userId', 'vkId'])
+                  .select(['user_audio.userId as userId', 'vkId'])
                   .from('user_audio', 'user_audio')
-                  .leftJoinAndSelect('audio', 'audio', 'user_audio.audioId = audio.id'),
+                  .leftJoin('audio', 'audio', 'user_audio.audioId = audio.id'),
               'ua2',
               'ua1.vkId = ua2.vkId'
             )
-            .where(`userId <> ${user.id}`)
+            .where(`ua2.userId <> ${user.id}`)
             .groupBy('ua2.userId'),
         'vkIdMatches',
         'vkIdMatches.userId = u.id'
       )
       /* совпадения аудио по songName && groupName */
-      .leftJoinAndSelect(
+      .leftJoin(
         (qb) =>
           qb
-            .select('ua2.userId AS userId, COUNT(*) count')
+            .select(['ua2.userId AS userId', 'COUNT(*) count'])
             .from(
               (qb) =>
                 qb /* # получаем список тех юзер-аудио которые соответствуют по иду аудио нашего искомого юзера */
-                  .select(['groupName', 'songName', 'userId AS user2Id'])
+                  .select(['groupName', 'songName', 'user_audio.userId AS user2Id'])
                   .from('user_audio', 'user_audio')
-                  .leftJoinAndSelect('audio', 'audio', 'user_audio.audioId = audio.id')
-                  .where(`userId = ${user.id}`),
+                  .leftJoin('audio', 'audio', 'user_audio.audioId = audio.id')
+                  .where(`user_audio.userId = ${user.id}`),
               'ua1'
             )
-            .leftJoinAndSelect(
+            .leftJoin(
               (qb) =>
                 qb
-                  .select(['userId', 'songName', 'groupName'])
+                  .select(['user_audio.userId as userId', 'songName', 'groupName'])
                   .from('user_audio', 'user_audio')
-                  .leftJoinAndSelect('audio', 'audio', 'user_audio.audioId = audio.id'),
+                  .leftJoin('audio', 'audio', 'user_audio.audioId = audio.id'),
               'ua2',
               'ua1.songName = ua2.songName AND ua1.groupName = ua2.groupName'
             )
@@ -122,38 +112,38 @@ class MatchingService {
         'SNGNMatches.userId = u.id'
       )
       /* совпадения аудио по groupName */
-      .leftJoinAndSelect(
+      .leftJoin(
         (qb) =>
           qb
-            .select('ua2.userId AS userId, COUNT(*) count')
+            .select(['ua2.userId AS userId', 'COUNT(*) count'])
             .from(
               (qb) =>
-                qb /* получаем список тех юзер-аудио которые соответствуют по иду аудио нашего искомого юзера */
-                  .select(['groupName', 'userId AS user2Id'])
+                qb
+                  .select(['groupName', 'user_audio.userId AS user2Id'])
                   .from('user_audio', 'user_audio')
-                  .leftJoinAndSelect('audio', 'audio', 'user_audio.audioId = audio.id')
-                  .where(`userId = ${user.id}`),
+                  .leftJoin('audio', 'audio', 'user_audio.audioId = audio.id')
+                  .where(`user_audio.userId = ${user.id}`),
               'ua1'
             )
-            .leftJoinAndSelect(
+            .leftJoin(
               (qb) =>
                 qb
-                  .select(['userId', 'groupName'])
+                  .select(['user_audio.userId as userId', 'groupName'])
                   .from('user_audio', 'user_audio')
-                  .leftJoinAndSelect('audio', 'audio', 'user_audio.audioId = audio.id'),
+                  .leftJoin('audio', 'audio', 'user_audio.audioId = audio.id'),
               'ua2',
               'ua1.groupName = ua2.groupName'
             )
-            .where(`userId <> ${user.id}`)
+            .where(`ua2.userId <> ${user.id}`)
             .groupBy('ua2.userId'),
         'GNMatches',
         'GNMatches.userId = u.id'
       )
       /* матчи */
-      .leftJoinAndSelect(
+      .leftJoin(
         (qb) =>
           qb
-            .select('ua2.user2Id, COUNT(*) count')
+            .select(['ua2.user2Id', 'COUNT(*) count'])
             .from(
               (qb) =>
                 qb /* получаем список тех юзер-аудио которые соответствуют по иду аудио нашего искомого юзера */
@@ -162,20 +152,16 @@ class MatchingService {
                   .where(`user1Id = ${user.id}`),
               'ua1'
             )
-            .leftJoinAndSelect(
-              (qb) => qb.select(['id', 'user1Id', 'user2Id']).from('match', 'match'),
-              'ua2',
-              'ua1.id = ua2.id'
-            )
+            .leftJoin((qb) => qb.select(['id', 'user1Id', 'user2Id']).from('match', 'match'), 'ua2', 'ua1.id = ua2.id')
             .groupBy('ua2.user2Id'),
         'Matches1',
         'Matches1.user2Id = u.id'
       )
       /* матчи 2 */
-      .leftJoinAndSelect(
+      .leftJoin(
         (qb) =>
           qb
-            .select('ua2.user1Id, COUNT(*) count')
+            .select(['ua2.user1Id as user1Id', 'COUNT(*) count'])
             .from(
               (qb) =>
                 qb /* получаем список тех юзер-аудио которые соответствуют по иду аудио нашего искомого юзера */
@@ -184,20 +170,16 @@ class MatchingService {
                   .where(`user2Id = ${user.id}`),
               'ua1'
             )
-            .leftJoinAndSelect(
-              (qb) => qb.select(['id', 'user1Id', 'user2Id']).from('match', 'match'),
-              'ua2',
-              'ua1.id = ua2.id'
-            )
-            .groupBy('user1Id'),
+            .leftJoin((qb) => qb.select(['id', 'user1Id', 'user2Id']).from('match', 'match'), 'ua2', 'ua1.id = ua2.id')
+            .groupBy('ua2.user1Id'),
         'Matches2',
         'Matches2.user1Id = u.id'
       )
       /* исключим те матчи которые еще не получили ответа */
-      .leftJoinAndSelect(
+      .leftJoin(
         (qb) =>
           qb
-            .select('ua2.user2Id, COUNT(*) count')
+            .select(['ua2.user2Id as user2Id', 'COUNT(*) count'])
             .from(
               (qb) =>
                 qb /* получаем список тех юзер-аудио которые соответствуют по иду аудио нашего искомого юзера */
@@ -206,17 +188,13 @@ class MatchingService {
                   .where(`user1Id = ${user.id} AND user1LikeDate is NULL`),
               'ua1'
             )
-            .leftJoinAndSelect(
-              (qb) => qb.select(['id', 'user1Id', 'user2Id']).from('match', 'match'),
-              'ua2',
-              'ua1.id = ua2.id'
-            )
-            .groupBy('user2Id'),
+            .leftJoin((qb) => qb.select(['id', 'user1Id', 'user2Id']).from('match', 'match'), 'ua2', 'ua1.id = ua2.id')
+            .groupBy('ua2.user2Id'),
         'ExcludeMatches',
         'ExcludeMatches.user2Id = u.id'
       )
       /* исключим те матчи которые недавно от u1 */
-      .leftJoinAndSelect(
+      .leftJoin(
         (qb) =>
           qb
             .select('ua2.user2Id')
@@ -230,20 +208,16 @@ class MatchingService {
                   OR DATE_SUB(CURDATE(), INTERVAL 1 DAY) < user2LikeDate)`),
               'ua1'
             )
-            .leftJoinAndSelect(
-              (qb) => qb.select(['id', 'user1Id', 'user2Id']).from('match', 'match'),
-              'ua2',
-              'ua1.id = ua2.id'
-            )
-            .groupBy('user2Id'),
+            .leftJoin((qb) => qb.select(['id', 'user1Id', 'user2Id']).from('match', 'match'), 'ua2', 'ua1.id = ua2.id')
+            .groupBy('ua2.user2Id'),
         'ExcludeMatches2',
         'ExcludeMatches2.user2Id = u.id'
       )
       /* исключим те матчи которые недавно от u2 */
-      .leftJoinAndSelect(
+      .leftJoin(
         (qb) =>
           qb
-            .select('ua2.user2Id')
+            .select('ua2.user1Id')
             .from(
               (qb) =>
                 qb.select(['id', 'user1Id', 'user2Id']).from('match', 'match').where(`user2Id = ${user.id} AND 
@@ -252,44 +226,81 @@ class MatchingService {
                   OR DATE_SUB(CURDATE(), INTERVAL 1 DAY) < user2LikeDate)`),
               'ua1'
             )
-            .leftJoinAndSelect(
-              (qb) => qb.select(['id', 'user1Id', 'user2Id']).from('match', 'match'),
-              'ua2',
-              'ua1.id = ua2.id'
-            )
+            .leftJoin((qb) => qb.select(['id', 'user1Id', 'user2Id']).from('match', 'match'), 'ua2', 'ua1.id = ua2.id')
             .groupBy('user1Id'),
         'ExcludeMatches3',
         'ExcludeMatches3.user1Id = u.id'
       )
       /* расстояние */
-      .innerJoinAndSelect('city', 'city', 'u.cityId = city.id')
-      .innerJoinAndSelect('user_options', 'uO', ' u.userOptionsId = uO.id');
+      .innerJoin('city', 'city', 'u.cityId = city.id')
+      .innerJoin('user_options', 'uO', 'u.userOptionsId = uO.id');
 
-    switch (user.userOptions.searchGenderFilter) {
-      case 'all':
-        query = query.where([
-          { ['uO.searchGenderFilter']: 'all' },
-          { ['ExcludeMatches.user2Id IS null']: null },
-          { ['ExcludeMatches3.user1Id']: null },
-        ]);
-      case 'male':
-        query = query.where([
-          { ['uO.searchGenderFilter']: 'female' },
-          { ['ExcludeMatches.user2Id IS null']: null },
-          { ['ExcludeMatches3.user1Id']: null },
-        ]);
-      case 'female':
-        query = query.where([
-          { ['uO.searchGenderFilter']: 'male' },
-          { ['ExcludeMatches.user2Id IS null']: null },
-          { ['ExcludeMatches3.user1Id']: null },
-        ]);
+    /* матрица для этого фильтра в /docs/ */
+    switch (true) {
+      case user.gender === 'male' && user.userOptions.searchGenderFilter === 'all':
+        query.andWhere(`
+          uO.searchGenderFilter = 'male' AND u.gender === "male"
+          OR
+          uO.searchGenderFilter = 'all' AND u.gender === "male"
+          OR
+          uO.searchGenderFilter = 'all' AND u.gender === "female"
+          OR
+          uO.searchGenderFilter = 'male' AND u.gender === "female"
+        `);
+        break;
+      case user.gender === 'female' && user.userOptions.searchGenderFilter === 'all':
+        query.andWhere(`
+          uO.searchGenderFilter = 'male' AND u.gender === "female"
+          OR
+          uO.searchGenderFilter = 'female' AND u.gender === "female"
+          OR
+          uO.searchGenderFilter = 'all' AND u.gender === "male"
+          OR
+          uO.searchGenderFilter = 'all' AND u.gender === "female"
+        `);
+        break;
+      case user.gender === 'male' && user.userOptions.searchGenderFilter === 'male':
+        query.andWhere(`
+          uO.searchGenderFilter = 'male' AND u.gender === "female"
+          OR
+          uO.searchGenderFilter = 'female' AND u.gender === "female"
+          OR
+          uO.searchGenderFilter = 'all' AND u.gender === "male"
+          OR
+          uO.searchGenderFilter = 'all' AND u.gender === "female"
+        `);
+        break;
+      case user.gender === 'female' && user.userOptions.searchGenderFilter === 'male':
+        query.andWhere(`
+          uO.searchGenderFilter = 'male' AND u.gender === "female"
+          OR
+          uO.searchGenderFilter = 'all' AND u.gender === "male"
+        `);
+        break;
+      case user.gender === 'female' && user.userOptions.searchGenderFilter === 'female':
+        query.andWhere(`
+          uO.searchGenderFilter = 'female' AND u.gender === "female"
+          OR
+          uO.searchGenderFilter = 'all' AND u.gender === "female"
+      `);
+        break;
+      case user.gender === 'male' && user.userOptions.searchGenderFilter === 'female':
+        query.andWhere(`
+          uO.searchGenderFilter = 'male' AND u.gender === "female"
+          OR
+          uO.searchGenderFilter = 'all' AND u.gender === "female"
+         `);
+        break;
     }
+
+    query = query
+      .andWhere('ExcludeMatches.user2Id is null')
+      .andWhere('ExcludeMatches2.user2Id is null')
+      .andWhere('ExcludeMatches3.user1Id is null');
+
     query = query.andWhere(`u.id <> ${user.id}`).orderBy('resultCount', 'DESC').limit(20);
 
     const str = query.getSql();
-
-    console.log(str);
 
     return str;
   }

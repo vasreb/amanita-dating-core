@@ -4,7 +4,7 @@ import { UserOptionsModel } from 'db/models/UserOptionsModel';
 import userOptionsService from '../services/UserOptionsService';
 
 app.get(
-  '/userOptions',
+  '/userOptions/:id',
   withErrorHandling(async function (req, res) {
     const id = req.params.id as string;
 

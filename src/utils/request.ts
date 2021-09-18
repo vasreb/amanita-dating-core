@@ -17,20 +17,20 @@ const request = async <T>(url: string, options: Options = {}): Promise<T> => {
     headers.Authorization = options.authorization;
   }
 
-  const fetchData: { [key: string]: string | object } = {
+  const fetchOptions: { [key: string]: string | object } = {
     method: options.method,
     headers,
   };
 
   if (options.cors) {
-    fetchData.mode = 'cors';
+    fetchOptions.mode = 'cors';
   }
 
   if (options.data) {
-    fetchData.body = JSON.stringify(options.data);
+    fetchOptions.body = JSON.stringify(options.data);
   }
 
-  const response = await fetch(url, fetchData);
+  const response = await fetch(url, fetchOptions);
 
   return response.json();
 };

@@ -30,8 +30,11 @@ class MatchingService {
       await this._matchingQueryService.getAudioMatchingQuery(currentUser)
     );
 
+    console.dir("audio match:", guys)
+
     if (!guys[0]) {
       guys = await this._dbManager.query(await this._matchingQueryService.getMinorQuery(currentUser));
+      console.dir("minor match:", guys)
     }
 
     if (!guys[0]) return new SuccessErrorDto<MatchUserModel>();

@@ -151,7 +151,7 @@ class UserService {
       groupName: a.groupName,
     }));
 
-    userModel.cityName = exist.city.name;
+    userModel.cityName = exist?.city?.name;
 
     response.data = userModel;
 

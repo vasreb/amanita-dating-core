@@ -21,6 +21,7 @@ class MatchingQueryService {
         'u.*',
         'city.geoLat',
         'city.geoLon',
+        'city.name',
         /* подсчет результирующего числа */
         `(${/* расстояние */ ''}
     

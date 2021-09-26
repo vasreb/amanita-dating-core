@@ -69,6 +69,7 @@ class MatchingService {
     }
     matchUserModel.user = userResp.data;
 
+    console.log("DEBUG_SEARCHING", DEBUG_SEARCHING);
     if (DEBUG_SEARCHING) {
       matchUserModel.user.description = `${matchUserModel.user.description}
       \n\n\naudio:\n${JSON.stringify(audioMatchingGuys, null, 2)}\n\nminor:\n${JSON.stringify(

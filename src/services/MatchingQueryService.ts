@@ -51,6 +51,8 @@ class MatchingQueryService {
 
     const str = query.getSql();
 
+    console.log(str);
+
     return str;
   }
 
@@ -101,6 +103,8 @@ class MatchingQueryService {
     query = this.chainSort(query, user);
 
     const str = query.getSql();
+
+    console.log(str);
 
     return str;
   }

@@ -4,4 +4,4 @@ export const DADATA_SUGGEST_CONTROLLER = 'https://suggestions.dadata.ru/suggesti
 
 export const VK_API = `http://localhost:4002`;
 
-export const DEBUG_SEARCHING = process.env.DEBUG_SEARCHING;
+export const DEBUG_SEARCHING = process.env.DEBUG_MATCHING;

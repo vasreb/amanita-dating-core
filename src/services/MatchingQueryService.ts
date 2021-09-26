@@ -121,7 +121,7 @@ class MatchingQueryService {
 
   private chainExcludeNoAudios(query: SelectQueryBuilder<unknown>, user: UserModel) {
     query = query.andWhere(
-      `vkIdMatches.count IS NOT NULL OR SNGNMatches.count IS NOT NULL OR GNMatches.count IS NOT null`
+      `(vkIdMatches.count IS NOT NULL OR SNGNMatches.count IS NOT NULL OR GNMatches.count IS NOT null)`
     );
 
     return query;

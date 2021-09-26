@@ -1,3 +1,4 @@
+import { DEBUG_SEARCHING } from './../constants/constants';
 import { getManager } from 'typeorm';
 
 import { MatchModel } from '../db/models/MatchModel';
@@ -33,10 +34,15 @@ class MatchingService {
     console.dir('audio match:');
     console.dir(guys);
 
+    const audioMatchingGuys = [...guys];
+
+    let minorMatchingGuys = [];
+
     if (!guys[0]) {
       guys = await this._dbManager.query(await this._matchingQueryService.getMinorQuery(currentUser));
       console.dir('minor match:');
       console.dir(guys);
+      minorMatchingGuys = [...guys];
     }
 
     if (!guys[0]) return new SuccessErrorDto<MatchUserModel>();
@@ -62,6 +68,15 @@ class MatchingService {
       response.errorMessage = userResp.errorMessage;
     }
     matchUserModel.user = userResp.data;
+
+    if (DEBUG_SEARCHING) {
+      matchUserModel.user.description = `${matchUserModel.user.description}
+      \n\n\naudio:\n${JSON.stringify(audioMatchingGuys, null, 2)}\n\nminor:\n${JSON.stringify(
+        minorMatchingGuys,
+        null,
+        2
+      )}`;
+    }
 
     return response;
   }

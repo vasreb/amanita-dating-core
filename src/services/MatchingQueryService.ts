@@ -30,7 +30,11 @@ class MatchingQueryService {
           
           ${/* возраст */ ''}
     
-          ABS(1 / (cast(u.age as signed) - ${user.age} + 0.1)) * ${coefs.AGE_COEF} +
+          ABS(1 / POW(
+			 
+          ABS(cast(u.age as signed) - ${user.age})
+            
+          , 0.2)) * ${coefs.AGE_COEF} +
     
           ${/* активность */ ''}
     

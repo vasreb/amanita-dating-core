@@ -63,6 +63,7 @@ class MatchingQueryService {
         'u.*',
         'city.geoLat',
         'city.geoLon',
+        'city.name',
         'vkIdMatches.count AS VkIdAudioMatches',
         'SNGNMatches.count AS SongGroupAudioMatches',
         'GNMatches.count AS GroupAudioMatches',

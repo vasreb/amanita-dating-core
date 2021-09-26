@@ -1,4 +1,6 @@
 import * as express from 'express';
+import * as cors from 'cors';
+
 import * as bodyParser from 'body-parser';
 import { AddressInfo } from 'net';
 /* import cors from 'cors'; */
@@ -14,6 +16,8 @@ const app = express();
 const HOST = '0.0.0.0';
 const PORT = 4000;
 const SSL_PORT = 8443;
+
+app.use(cors());
 
 const server = app.listen(PORT, HOST, () => {
   const { port, address } = server.address() as AddressInfo;

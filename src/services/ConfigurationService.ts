@@ -46,6 +46,16 @@ class ConfigurationService {
     return object;
   }
 
+  public async setNumberOptions(options: SystemOptionModel[]) {
+    await Promise.all(
+      options.map(async (o) => {
+        const opt = await SystemOptionModel.findOne({ where: { name: o.name } });
+        opt.numValue = o.numValue;
+        await opt.save();
+      })
+    );
+  }
+
   public async getNumberOption(name: OptionName) {
     const res = await SystemOptionModel.findOne({ where: { name } });
 

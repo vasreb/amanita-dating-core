@@ -20,8 +20,7 @@ app.post(
 app.put(
   '/matching',
   withErrorHandling(async function (req, res) {
-    const data = req.body as { userId: number; targetId: number; dislike: boolean; };
-
+    const data = req.body as { userId: number; targetId: number; dislike: boolean };
 
     if (typeof data.userId !== 'number') {
       throw Error('err');
@@ -32,6 +31,21 @@ app.put(
 
     const result = await matchingService.likeMatch(data.userId, data.targetId, data.dislike);
 
+    res.status(200).json(result);
+  })
+);
+
+app.post(
+  '/debugMatch',
+  withErrorHandling(async function (req, res) {
+    const userId = req?.query?.id;
+
+    if (typeof userId !== 'string') {
+      throw Error('err');
+    }
+
+    const result = await matchingService.debugMatch(parseInt(userId), req.body.minor, req.body.options);
+    console.dir(result);
     res.status(200).json(result);
   })
 );

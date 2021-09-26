@@ -89,7 +89,9 @@ class MatchingQueryService {
     
           ABS(1 / POW(
 			 
-            ABS(cast(u.age as signed) - ${user.age})
+            ABS(
+              IFNULL(NULLIF(cast(u.age as signed) - ${user.age}, 0), 1)
+            )
               
             , 0.2)) * ${coefs.AGE_COEF} +
       
@@ -128,7 +130,7 @@ class MatchingQueryService {
   }
 
   private chainSort(query: SelectQueryBuilder<unknown>, user: UserModel) {
-    query = query.andWhere(`u.id <> ${user.id}`).orderBy('resultCount', 'DESC').limit(5);
+    query = query.andWhere(`u.id <> ${user.id}`).orderBy('resultCount', 'DESC').limit(15);
 
     return query;
   }
@@ -339,7 +341,7 @@ class MatchingQueryService {
         break;
       case user.gender === 'female' && user.userOptions.searchGenderFilter === 'all':
         query = query.andWhere(`
-           (uO.searchGenderFilter = 'male' AND u.gender = "female"
+           (uO.searchGenderFilter = 'female' AND u.gender = "male"
             OR
             uO.searchGenderFilter = 'female' AND u.gender = "female"
             OR
@@ -350,18 +352,14 @@ class MatchingQueryService {
         break;
       case user.gender === 'male' && user.userOptions.searchGenderFilter === 'male':
         query = query.andWhere(`
-            (uO.searchGenderFilter = 'male' AND u.gender = "female"
+            (uO.searchGenderFilter = 'male' AND u.gender = "male"
             OR
-            uO.searchGenderFilter = 'female' AND u.gender = "female"
-            OR
-            uO.searchGenderFilter = 'all' AND u.gender = "male"
-            OR
-            uO.searchGenderFilter = 'all' AND u.gender = "female")
+            uO.searchGenderFilter = 'all' AND u.gender = "male")
           `);
         break;
       case user.gender === 'female' && user.userOptions.searchGenderFilter === 'male':
         query = query.andWhere(`
-            (uO.searchGenderFilter = 'male' AND u.gender = "female"
+            (uO.searchGenderFilter = 'female' AND u.gender = "male"
             OR
             uO.searchGenderFilter = 'all' AND u.gender = "male")
           `);

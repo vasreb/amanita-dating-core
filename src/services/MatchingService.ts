@@ -9,11 +9,14 @@ import LikeResultModel from '../models/LikeResultModel';
 import MatchUserModel from '../models/MatchUserModel';
 import notifyService from './NotifyService';
 import matchingQueryService from './MatchingQueryService';
+import configurationService from './ConfigurationService';
+import { SystemOptionModel } from 'db/models/SystemOptionModel';
 
 class MatchingService {
   private _userService = userService;
   private _notifyService = notifyService;
   private _matchingQueryService = matchingQueryService;
+  private _configurationService = configurationService;
 
   private get _dbManager() {
     return getManager();
@@ -69,7 +72,6 @@ class MatchingService {
     }
     matchUserModel.user = userResp.data;
 
-    console.log("DEBUG_SEARCHING", DEBUG_SEARCHING);
     if (DEBUG_SEARCHING) {
       matchUserModel.user.description = `${matchUserModel.user.description}
       \n\n\naudio:\n${JSON.stringify(audioMatchingGuys, null, 2)}\n\nminor:\n${JSON.stringify(
@@ -78,6 +80,31 @@ class MatchingService {
         2
       )}`;
     }
+
+    return response;
+  }
+
+  public async debugMatch(currentUserId: number, minor: boolean, options: SystemOptionModel[]) {
+    const [currentUser] = await UserModel.find({
+      where: { id: currentUserId },
+      relations: ['city', 'userOptions'],
+    });
+
+    if (!currentUser) throw new Error('guy not exist');
+
+    let guys: UserModel[];
+
+    if (minor) {
+      guys = await this._dbManager.query(await this._matchingQueryService.getMinorQuery(currentUser));
+    } else {
+      guys = await this._dbManager.query(await this._matchingQueryService.getAudioMatchingQuery(currentUser));
+    }
+
+    if (options) {
+      await this._configurationService.setNumberOptions(options);
+    }
+
+    const response = { list: guys, coefs: await this._configurationService.loadNumberOptions() };
 
     return response;
   }

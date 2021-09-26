@@ -104,7 +104,7 @@ class MatchingQueryService {
   }
 
   private chainSort(query: SelectQueryBuilder<unknown>, user: UserModel) {
-    query = query.andWhere(`u.id <> ${user.id}`).orderBy('resultCount', 'DESC').limit(10);
+    query = query.andWhere(`u.id <> ${user.id}`).orderBy('resultCount', 'DESC').limit(5);
 
     return query;
   }

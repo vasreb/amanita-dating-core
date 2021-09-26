@@ -109,6 +109,7 @@ class MatchingQueryService {
     query = this.chainMatchesJoins(query, user);
     query = this.chainGenderFilter(query, user);
     query = this.chainExcludeMatchesFilter(query, user);
+    query = this.chainExcludeNoAudios(query, user);
     query = this.chainSort(query, user);
 
     const str = query.getSql();
@@ -116,6 +117,14 @@ class MatchingQueryService {
     console.log(str);
 
     return str;
+  }
+
+  private chainExcludeNoAudios(query: SelectQueryBuilder<unknown>, user: UserModel) {
+    query = query.andWhere(
+      `vkIdMatches.count IS NOT NULL OR SNGNMatches.count IS NOT NULL OR GNMatches.count IS NOT null`
+    );
+
+    return query;
   }
 
   private chainSort(query: SelectQueryBuilder<unknown>, user: UserModel) {

@@ -32,9 +32,13 @@ class MatchingQueryService {
     
           ABS(1 / POW(
 			 
-          ABS(cast(u.age as signed) - ${user.age})
+          ABS(
             
-          , 0.2)) * ${coefs.AGE_COEF} +
+            IF(cast(u.age as signed) - ${user.age} = 0, 1, cast(u.age as signed) - ${user.age})
+            
+             )
+            
+          , 0.05)) * ${coefs.AGE_COEF} +
     
           ${/* активность */ ''}
     
@@ -86,14 +90,15 @@ class MatchingQueryService {
           
           ${/* возраст */ ''}
     
-    
           ABS(1 / POW(
 			 
             ABS(
-              IFNULL(NULLIF(cast(u.age as signed) - ${user.age}, 0), 1)
-            )
               
-            , 0.2)) * ${coefs.AGE_COEF} +
+              IF(cast(u.age as signed) - ${user.age} = 0, 1, cast(u.age as signed) - ${user.age})
+              
+               )
+              
+            , 0.05)) * ${coefs.AGE_COEF} +
       
           ${/* активность */ ''}
     
